@@ -146,12 +146,16 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="Account.h" />
+    <ClInclude Include="Gameplay.h" />
     <ClInclude Include="Protocol.h" />
+    <ClInclude Include="Question.h" />
     <ClInclude Include="stdafx.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Account.cpp" />
     <ClCompile Include="Protocol.cpp" />
+    <ClCompile Include="Question.cpp" />
+    <ClCompile Include="Server.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
