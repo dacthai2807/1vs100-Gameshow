@@ -23,7 +23,15 @@ typedef struct Question {
 	char true_ans;
 };
 
+typedef enum ANSWER {
+	A,
+	B,
+	C
+};
+
 vector<Question*> createQuestionList();
+
+vector<Question*>loadQuestion(char *addr);
 
 Question *newQuestion(char *question, char* answer1, char *answer2, char *answer3, char true_ans);
 

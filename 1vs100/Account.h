@@ -25,7 +25,10 @@ struct Account {
 	}
 };
                                                                
-Account *findUserNameAccount(vector<Account*> accountList, char *username);                         // find Account By Username                            // find account by position
+Account *findUserNameAccount(vector<Account*> accountList, char *username);      // find Account By Username                            // find account by position
+//load acc t? file
+vector<Account*>loadAcc(char *addrFIle);
+
 void addAccount(vector<Account*> accountList, char *username, char *password, int accountStatus); //add node to link list
 int countMemberOnline(vector<Account*> accountList);                                    //count member online and save position into array
 void printListAccount(vector<Account*> accountList);                                                            // print link list

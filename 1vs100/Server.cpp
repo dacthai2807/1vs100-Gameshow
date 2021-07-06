@@ -13,6 +13,11 @@
 #include "ctime"
 #include "iostream"
 
+
+#include "Question.h"
+#include "Account.h"
+#include "Gameplay.h"
+
 #define PORT 6000
 #define DATA_BUFSIZE 2048
 #define BUFF_SIZE 2048
@@ -20,6 +25,10 @@
 #define MAX_CLIENT 5000
 #define MAX_ACC 100
 #define SERVER_ADDR "127.0.0.1"
+#define MAX_PLAYER 101
+
+#define ADDR_ACC "account.txt"
+#define ADDR_QUES "question.txt"
 
 #pragma comment(lib, "Ws2_32.lib")
 
@@ -34,19 +43,18 @@ typedef struct {
 	int id;
 } PER_IO_OPERATION_DATA, *LPPER_IO_OPERATION_DATA;
 
-//store each client session
-struct Session {
-	char clientIp[INET_ADDRSTRLEN];// client's IP address
-	int clientPort;//client's port
-	string userName;// user name
-	char status;// session active state. status = 1, active session. status = 0, session inactive
-};
+
+vector<Account*> account;
+vector<Question*> question;
+InformationGame gamePlay;
+InformationPlayer player[MAX_PLAYER];
+
+
 
 typedef struct {
 	SOCKET socket;
 } PER_HANDLE_DATA, *LPPER_HANDLE_DATA;
 
-Session session[MAX_CLIENT];
 bool stateId[MAX_CLIENT];
 CRITICAL_SECTION critical;
 int nSock = 0;// total active socket
@@ -55,6 +63,14 @@ string account[MAX_ACC];//active accountn
 
 unsigned __stdcall serverWorkerThread(LPVOID CompletionPortID);
 
+
+
+/*
+function load data base*/
+void loadDataBase() {
+	account = loadAcc(ADDR_ACC);
+	question = loadQuestion(ADDR_QUES);
+}
 
 
 /*funcion check the end of the message
@@ -126,17 +142,15 @@ char* processPrefix(char* buff, char* mess) {
 void processData(char* recvbuff, char* sendbuff, int id) {
 	char mess[BUFF_SIZE] = { '\0' };// prefix
 	char data[BUFF_SIZE] = { '\0' };// data
-	int clientPort = session[id].clientPort;//session's port
+	//int clientPort = session[id].clientPort;//session's port
 	char clientIp[INET_ADDRSTRLEN];// session's ip address
-	strcpy_s(clientIp, session[id].clientIp);
+	//strcpy_s(clientIp, session[id].clientIp);
 	// separate data and prefix
 	strcpy_s(data, processPrefix(recvbuff, mess));
 	if (strcmp(mess, "LOGIN") == 0) {
 		//check login
 		if (1) {
-			// update status the session
-			session[id].userName = data;
-			session[id].status = '1';
+			
 			//returns results for each received message
 			memcpy(sendbuff, "+OK ", SEND_BUFF);
 
@@ -147,25 +161,10 @@ void processData(char* recvbuff, char* sendbuff, int id) {
 		}
 	}
 	else if (strcmp(mess, "POST") == 0) {
-		if (session[id].status == '1') {
-			//returns results for each received message
-			memcpy(sendbuff, "+OK ", SEND_BUFF);
-
-		}
-		else {
-			memcpy(sendbuff, "-ERROR ", SEND_BUFF);//returns results for each received message
-		}
+		
 	}
 	else if (strcmp(mess, "LOGOUT") == 0) {
-		if (session[id].status == '1') {
-			session[id].userName.clear();
-			session[id].status = '0';
-			//returns results for each received message
-			memcpy(sendbuff, "+OK ", SEND_BUFF);
-		}
-		else {
-			memcpy(sendbuff, "-ERROR ", SEND_BUFF);//returns results for each received message
-		}
+	
 	}
 	else if (strcmp(mess, "QUIT") == 0) {
 		//returns results for each received message
@@ -182,22 +181,12 @@ void processData(char* recvbuff, char* sendbuff, int id) {
 @param client: structure to delete
 @param id: structure identifier value
 */
-void closeSesion(LPPER_IO_OPERATION_DATA client, LPPER_HANDLE_DATA socket, int id) {
-	session[id].status = '0';
-	session[id].clientIp[0] = '\0';
-	session[id].clientPort = 0;
-	session[id].userName.clear();
-	stateId[id] = false;
-	closesocket(socket->socket);
-	GlobalFree(client);
-	GlobalFree(socket);
-	nSock--;
 
-}
 
 int threadid = 0;
 int _tmain(int argc, _TCHAR* argv[])
 {
+	loadDataBase();
 	SOCKADDR_IN serverAddr;
 	SOCKET listenSock, acceptSock;
 	HANDLE completionPort;
@@ -300,8 +289,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				if (stateId[i] == false) {
 					perIoData->id = i;
 					stateId[i] = true;
-					session[i].clientPort = clientPort;
-					strcpy_s(session[i].clientIp, clientIp);
+					
 					break;
 				}
 			}
@@ -356,7 +344,7 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 		if (transferredBytes == 0) {
 			EnterCriticalSection(&critical);
 			printf("Closing socket %d\n", perHandleData->socket);
-			closeSesion(perIoData, perHandleData, perIoData->id);
+			//closeSesion(perIoData, perHandleData, perIoData->id);
 			LeaveCriticalSection(&critical);
 			continue;
 		}
@@ -378,7 +366,7 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 				if (WSAGetLastError() != ERROR_IO_PENDING) {
 					printf("WSASend() failed with error %d\n", WSAGetLastError());
 					EnterCriticalSection(&critical);
-					closeSesion(perIoData, perHandleData, perIoData->id);
+					//closeSesion(perIoData, perHandleData, perIoData->id);
 					LeaveCriticalSection(&critical);
 					continue;
 				}
@@ -394,7 +382,7 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 			if (WSARecv(perHandleData->socket, &(perIoData->recvBuff), 1, &transferredBytes, &flags, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
 				if (WSAGetLastError() != ERROR_IO_PENDING) {
 					EnterCriticalSection(&critical);
-					closeSesion(perIoData, perHandleData, perIoData->id);
+					//closeSesion(perIoData, perHandleData, perIoData->id);
 					LeaveCriticalSection(&critical);
 					continue;
 				}

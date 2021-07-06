@@ -3,21 +3,24 @@
 #include "string"
 #include "Account.h"
 #include "stdio.h"
+#include "Question.h"
 
 
 
 
 typedef struct {
-	int score;
-	int playerAnswerWrong;
-	int playerPlaying;
-	int status;
-} Information;
+	bool sigIn;
+	ANSWER ans;
+	int clientPort;
+	char clientIp[INET_ADDRSTRLEN];
+	string userName;
+} InformationPlayer;
 
 typedef struct {
-	int stt;
-
-} help;
+	GAMEPLAY_STATUS status;
+	int phayerAnswerWrong;
+	int phayerPlaying;
+} InformationGame;
 
 typedef enum {
 	WAITING_PLAYER,
