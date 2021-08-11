@@ -1,0 +1,17 @@
+﻿Build started 8/11/2021 11:30:04 PM.
+     1>Project "D:\VSC2015\1vs100-Gameshow\Client_test\Client_test.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /ZI /nologo /W3 /WX- /Od /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TP /errorReport:prompt Client_test.cpp
+         Client_test.cpp
+     1>d:\vsc2015\1vs100-gameshow\client_test\client_test.cpp(93): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+     1>d:\vsc2015\1vs100-gameshow\client_test\client_test.cpp(163): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+     1>d:\vsc2015\1vs100-gameshow\client_test\client_test.cpp(209): warning C4715: 'setData': not all control paths return a value
+     1>d:\vsc2015\1vs100-gameshow\client_test\client_test.cpp(193): warning C4172: returning address of local variable or temporary: datasend
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"D:\VSC2015\1vs100-Gameshow\x64\Debug\Client_test.exe" /INCREMENTAL /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"D:\VSC2015\1vs100-Gameshow\x64\Debug\Client_test.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\VSC2015\1vs100-Gameshow\x64\Debug\Client_test.lib" /MACHINE:X64 x64\Debug\Client_test.obj
+         Client_test.vcxproj -> D:\VSC2015\1vs100-Gameshow\x64\Debug\Client_test.exe
+     1>Done Building Project "D:\VSC2015\1vs100-Gameshow\Client_test\Client_test.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.20

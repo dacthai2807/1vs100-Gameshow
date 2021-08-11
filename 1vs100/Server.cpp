@@ -1,6 +1,6 @@
 // SingleIOCPServer.cpp : Defines the entry point for the console application.
 //
-
+#include "stdafx.h"
 #include <tchar.h>
 #include <winsock2.h>
 #include <windows.h>
@@ -41,13 +41,16 @@ typedef struct {
 	WSABUF sendBuf;
 	CHAR bufSend[SEND_BUFF];
 	int id;
+	int stt;
 } PER_IO_OPERATION_DATA, *LPPER_IO_OPERATION_DATA;
 
 
 vector<Account*> account;
-vector<Question*> question;
+//vector<Question*> question;
 InformationGame gamePlay;
-InformationPlayer player[MAX_PLAYER];
+LPPER_IO_OPERATION_DATA operationData[MAX_PLAYER + 1] = { 0 };
+InformationPlayer player[MAX_PLAYER + 1] = { 0 };
+
 
 
 
@@ -59,7 +62,7 @@ bool stateId[MAX_CLIENT];
 CRITICAL_SECTION critical;
 int nSock = 0;// total active socket
 ofstream fileLog;// file log
-string account[MAX_ACC];//active accountn
+
 
 unsigned __stdcall serverWorkerThread(LPVOID CompletionPortID);
 
@@ -68,8 +71,8 @@ unsigned __stdcall serverWorkerThread(LPVOID CompletionPortID);
 /*
 function load data base*/
 void loadDataBase() {
-	account = loadAcc(ADDR_ACC);
-	question = loadQuestion(ADDR_QUES);
+	//account = loadAcc(ADDR_ACC);
+	//question = loadQuestion(ADDR_QUES);
 }
 
 
@@ -139,7 +142,7 @@ char* processPrefix(char* buff, char* mess) {
 @param id: session index
 @return: no return value
 */
-void processData(char* recvbuff, char* sendbuff, int id) {
+void processData(char* recvbuff, char* sendbuff, LPPER_IO_OPERATION_DATA perIOdata) {
 	char mess[BUFF_SIZE] = { '\0' };// prefix
 	char data[BUFF_SIZE] = { '\0' };// data
 	//int clientPort = session[id].clientPort;//session's port
@@ -147,33 +150,46 @@ void processData(char* recvbuff, char* sendbuff, int id) {
 	//strcpy_s(clientIp, session[id].clientIp);
 	// separate data and prefix
 	strcpy_s(data, processPrefix(recvbuff, mess));
-	if (strcmp(mess, "LOGIN") == 0) {
-		//check login
-		if (1) {
-			
-			//returns results for each received message
-			memcpy(sendbuff, "+OK ", SEND_BUFF);
-
+	if (strcmp(mess, "SIGNIN") == 0) {
+		//ki?m tra tài kh?a m?t kh?u và tr? v? code cho sendbuff
+		if (checkLogin(data, sendbuff)) {
+			for (int i = 1; i <= MAX_PLAYER; i++) {
+				if (operationData[i] == 0) {
+					operationData[i] = perIOdata;
+					perIOdata->stt = i;
+					break;
+				}
+			}
+		}
+	}
+	else if (strcmp(mess, "SIGNUP") == 0) {
+		if (checkSignUp(data)) {
+			writeFileAccount(data);
+			memcpy(sendbuff, "010", SEND_BUFF);
 		}
 		else {
-			memcpy(sendbuff, "-ERROR ", SEND_BUFF);//returns results for each received message
-
+			memcpy(sendbuff, "011", SEND_BUFF);
 		}
 	}
-	else if (strcmp(mess, "POST") == 0) {
-		
-	}
-	else if (strcmp(mess, "LOGOUT") == 0) {
+	else if (strcmp(mess, "SIGNOUT") == 0) {
+		if (checkLogout()) {
+			memcpy(sendbuff, "020", SEND_BUFF);
+		}
+		else {
+			memcpy(sendbuff, "021", SEND_BUFF);
+		}
+
 	
 	}
 	else if (strcmp(mess, "QUIT") == 0) {
 		//returns results for each received message
-		memcpy(sendbuff, "+OK ", SEND_BUFF);
+		
 		//writeFileLog(clientIp, clientPort, mess, "+OK", data);// wite file log
 	}
 	else {
+		memcpy(sendbuff, "021", SEND_BUFF);
 		//Client submitted malformed
-		memcpy(sendbuff, "-ERROR ", SEND_BUFF);
+	
 	}
 }
 
@@ -198,7 +214,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	char clientIp[INET_ADDRSTRLEN];
 	int clientAddrLen = sizeof(clientAddr), clientPort;
 
-
+	gamePlay.status = WAITING_PLAYER;
 	InitializeCriticalSection(&critical);
 
 	if (WSAStartup((2, 2), &wsaData) != 0) {
@@ -281,6 +297,7 @@ int _tmain(int argc, _TCHAR* argv[])
 				printf("GlobalAlloc() failed with error %d\n", GetLastError());
 				return 1;
 			}
+			
 
 			inet_ntop(AF_INET, &clientAddr.sin_addr, clientIp, sizeof(clientIp));
 			clientPort = ntohs(clientAddr.sin_port);
@@ -328,8 +345,6 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 	LeaveCriticalSection(&critical);
 	//printf("thread %d started !\n", myId);
 
-
-
 	while (TRUE) {
 
 		if (GetQueuedCompletionStatus(completionPort, &transferredBytes, (LPDWORD)&perHandleData, (LPOVERLAPPED *)&perIoData, INFINITE) == 0) {
@@ -350,43 +365,54 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 		}
 
 		EnterCriticalSection(&critical);
-		if (hasDelimeted(perIoData->recvBuff.buf)) {
-			ZeroMemory(&(perIoData->overlapped), sizeof(OVERLAPPED));
-			//cout << perIoData->recvBuff.buf;
-			char data[BUFF_SIZE] = { '\0' };
-			extractFromData(perIoData->recvBuff.buf, data);
-			LeaveCriticalSection(&critical);
-			perIoData->sendBuf.buf = perIoData->bufSend;
-			processData(data, perIoData->sendBuf.buf, perIoData->id);
-			perIoData->sendBuf.len = strlen(perIoData->sendBuf.buf);
 
-			//cout << strlen(data) << data << "--->" << perIoData->sendBuf.buf << endl;
-
-			if (WSASend(perHandleData->socket, &(perIoData->sendBuf), 1, &transferredBytes, 0, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
-				if (WSAGetLastError() != ERROR_IO_PENDING) {
-					printf("WSASend() failed with error %d\n", WSAGetLastError());
-					EnterCriticalSection(&critical);
-					//closeSesion(perIoData, perHandleData, perIoData->id);
+		switch (gamePlay.status) 
+		{
+			case WAITING_PLAYER:
+			{
+				if (hasDelimeted(perIoData->recvBuff.buf)) {
+					ZeroMemory(&(perIoData->overlapped), sizeof(OVERLAPPED));
+					cout << perIoData->recvBuff.buf;
+					char data[BUFF_SIZE] = { '\0' };
+					extractFromData(perIoData->recvBuff.buf, data);
 					LeaveCriticalSection(&critical);
-					continue;
+					perIoData->sendBuf.buf = perIoData->bufSend;
+					processData(data, perIoData->sendBuf.buf, perIoData);
+					perIoData->sendBuf.len = strlen(perIoData->sendBuf.buf);
+
+					//cout << strlen(data) << data << "--->" << perIoData->sendBuf.buf << endl;
+
+					if (WSASend(perHandleData->socket, &(perIoData->sendBuf), 1, &transferredBytes, 0, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
+						if (WSAGetLastError() != ERROR_IO_PENDING) {
+							printf("WSASend() failed with error %d\n", WSAGetLastError());
+							EnterCriticalSection(&critical);
+							//closeSesion(perIoData, perHandleData, perIoData->id);
+							LeaveCriticalSection(&critical);
+							continue;
+						}
+					}
 				}
+				else {
+					LeaveCriticalSection(&critical);
+					// No more bytes to send post another WSARecv() request
+					flags = 0;
+					ZeroMemory(&(perIoData->overlapped), sizeof(OVERLAPPED));
+					perIoData->recvBuff.len = DATA_BUFSIZE;
+					perIoData->recvBuff.buf = perIoData->bufRecv;
+					if (WSARecv(perHandleData->socket, &(perIoData->recvBuff), 1, &transferredBytes, &flags, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
+						if (WSAGetLastError() != ERROR_IO_PENDING) {
+							EnterCriticalSection(&critical);
+							//closeSesion(perIoData, perHandleData, perIoData->id);
+							LeaveCriticalSection(&critical);
+							continue;
+						}
+					}
 			}
+
+		default:
+			break;
 		}
-		else {
-			LeaveCriticalSection(&critical);
-			// No more bytes to send post another WSARecv() request
-			flags = 0;
-			ZeroMemory(&(perIoData->overlapped), sizeof(OVERLAPPED));
-			perIoData->recvBuff.len = DATA_BUFSIZE;
-			perIoData->recvBuff.buf = perIoData->bufRecv;
-			if (WSARecv(perHandleData->socket, &(perIoData->recvBuff), 1, &transferredBytes, &flags, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
-				if (WSAGetLastError() != ERROR_IO_PENDING) {
-					EnterCriticalSection(&critical);
-					//closeSesion(perIoData, perHandleData, perIoData->id);
-					LeaveCriticalSection(&critical);
-					continue;
-				}
-			}
+		
 		}
 
 	}

@@ -1,5 +1,20 @@
 #include "Account.h"
 
+
+int checkLogin(char * usernameAndPass, char* code) {
+	return 1;
+};
+int checkSignUp(char* usernameAndPass) {
+	return 1;
+};
+void writeFileAccount(char* userNameAndPass) {
+
+};
+int checkLogout() {
+	return 1;
+};
+
+
 //find account by username
 Account *findUserNameAccount(vector<Account*> accountList, char *username) {
 	for (int i = 0; i < accountList.size(); ++i) {

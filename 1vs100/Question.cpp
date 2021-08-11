@@ -7,10 +7,10 @@ vector<Question*> createQuestionList() {
 
 Question *newQuestion(char *question, char* answer1, char *answer2, char *answer3, char true_ans) {
 	Question *ques = (Question *)malloc(sizeof(Question));
-	strcpy(ques->question, question);
-	strcpy(ques->answer1, answer1);
-	strcpy(ques->answer2, answer2);
-	strcpy(ques->answer3, answer3);
+	strcpy_s(ques->question, question);
+	strcpy_s(ques->answer1, answer1);
+	strcpy_s(ques->answer2, answer2);
+	strcpy_s(ques->answer3, answer3);
 	ques->true_ans = true_ans;
 	return ques;
 }
@@ -32,13 +32,13 @@ void loadQuesFromfile(char* namefile, vector<Question*> questionList) {
 
 	if (file.is_open()) {
 		while (getline(file, line)) {
-			strcpy(question, line.c_str());
+			strcpy_s(question, line.c_str());
 			getline(file, line);
-			strcpy(answer1, line.c_str());
+			strcpy_s(answer1, line.c_str());
 			getline(file, line);
-			strcpy(answer2, line.c_str());
+			strcpy_s(answer2, line.c_str());
 			getline(file, line);
-			strcpy(answer3, line.c_str());
+			strcpy_s(answer3, line.c_str());
 			getline(file, line);
 			true_ans = line[0];
 			addQuestion(questionList, question, answer1, answer2, answer3, true_ans);

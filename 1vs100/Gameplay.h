@@ -4,6 +4,7 @@
 #include "Account.h"
 #include "stdio.h"
 #include "Question.h"
+#include "ws2tcpip.h"
 
 
 
@@ -17,7 +18,7 @@ typedef struct {
 } InformationPlayer;
 
 typedef struct {
-	GAMEPLAY_STATUS status;
+	int status;
 	int phayerAnswerWrong;
 	int phayerPlaying;
 } InformationGame;

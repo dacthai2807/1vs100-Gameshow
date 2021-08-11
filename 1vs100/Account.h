@@ -29,6 +29,11 @@ Account *findUserNameAccount(vector<Account*> accountList, char *username);     
 //load acc t? file
 vector<Account*>loadAcc(char *addrFIle);
 
+int checkLogin(char * usernameAndPass, char* code);
+int checkSignUp(char* usernameAndPass);
+void writeFileAccount(char* userNameAndPass);
+int checkLogout();
+
 void addAccount(vector<Account*> accountList, char *username, char *password, int accountStatus); //add node to link list
 int countMemberOnline(vector<Account*> accountList);                                    //count member online and save position into array
 void printListAccount(vector<Account*> accountList);                                                            // print link list

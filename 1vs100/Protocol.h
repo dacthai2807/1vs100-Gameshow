@@ -57,10 +57,10 @@ typedef enum {
 	INFORMATION_SUCCESS = 070,
 	INFORMATION_ORTHER_PLAYER_ANSWERING = 071,
 
-	GAME_READY = 080,
-	GAME_NOT_READY = 081,
-	GAME_END = 082,
-	GAME_IS_PLAYING = 083,
+	GAME_READY = 1,
+	GAME_NOT_READY = 2,
+	GAME_END = 3,
+	GAME_IS_PLAYING = 4,
 
 } MESSAGE_STATUS;
 
@@ -76,10 +76,10 @@ typedef struct {
 	char data[50] = { '\0' };
 } Response;
 //core function
-
+/*
 template <class T>
 int sendMessage(int socket, T *buff, int size, int flags);
-
+*/
 template <class T>
 int receiveMessage(int socket, T *buff, int size, int flags);
 

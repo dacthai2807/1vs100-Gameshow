@@ -1,0 +1,47 @@
+﻿Build started 8/9/2021 4:52:39 PM.
+     1>Project "D:\VSC2015\1vs100-Gameshow\1vs100\1vs100.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /D _DEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TP /errorReport:prompt Gameplay.cpp Protocol.cpp Question.cpp Server.cpp
+         Server.cpp
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.h(24): warning C4091: 'typedef ': ignored on left of 'Question' when no variable is declared
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.h(30): warning C4091: 'typedef ': ignored on left of 'ANSWER' when no variable is declared
+     1>d:\vsc2015\1vs100-gameshow\1vs100\gameplay.h(20): error C3646: 'status': unknown override specifier
+     1>d:\vsc2015\1vs100-gameshow\1vs100\gameplay.h(20): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>d:\vsc2015\1vs100-gameshow\1vs100\server.cpp(23): warning C4005: 'BUFF_SIZE': macro redefinition
+         d:\vsc2015\1vs100-gameshow\1vs100\question.h(9): note: see previous definition of 'BUFF_SIZE'
+     1>d:\vsc2015\1vs100-gameshow\1vs100\server.cpp(63): error C2373: 'account': redefinition; different type modifiers
+         d:\vsc2015\1vs100-gameshow\1vs100\server.cpp(47): note: see declaration of 'account'
+     1>d:\vsc2015\1vs100-gameshow\1vs100\server.cpp(275): warning C4311: 'type cast': pointer truncation from 'LPPER_HANDLE_DATA' to 'DWORD'
+     1>d:\vsc2015\1vs100-gameshow\1vs100\server.cpp(275): warning C4302: 'type cast': truncation from 'LPPER_HANDLE_DATA' to 'DWORD'
+     1>d:\vsc2015\1vs100-gameshow\1vs100\server.cpp(336): error C2664: 'BOOL GetQueuedCompletionStatus(HANDLE,LPDWORD,PULONG_PTR,LPOVERLAPPED *,DWORD)': cannot convert argument 3 from 'LPDWORD' to 'PULONG_PTR'
+         d:\vsc2015\1vs100-gameshow\1vs100\server.cpp(336): note: Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or function-style cast
+     1>d:\vsc2015\1vs100-gameshow\1vs100\server.cpp(362): warning C4267: '=': conversion from 'size_t' to 'ULONG', possible loss of data
+         Question.cpp
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.h(24): warning C4091: 'typedef ': ignored on left of 'Question' when no variable is declared
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.h(30): warning C4091: 'typedef ': ignored on left of 'ANSWER' when no variable is declared
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.cpp(10): error C4996: 'strcpy': This function or variable may be unsafe. Consider using strcpy_s instead. To disable deprecation, use _CRT_SECURE_NO_WARNINGS. See online help for details.
+         c:\program files (x86)\windows kits\10\include\10.0.10150.0\ucrt\string.h(119): note: see declaration of 'strcpy'
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.cpp(20): warning C4267: '=': conversion from 'size_t' to 'int', possible loss of data
+         Protocol.cpp
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.h(24): warning C4091: 'typedef ': ignored on left of 'Question' when no variable is declared
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.h(30): warning C4091: 'typedef ': ignored on left of 'ANSWER' when no variable is declared
+     1>d:\vsc2015\1vs100-gameshow\1vs100\gameplay.h(15): error C2065: 'INET_ADDRSTRLEN': undeclared identifier
+     1>d:\vsc2015\1vs100-gameshow\1vs100\gameplay.h(20): error C3646: 'status': unknown override specifier
+     1>d:\vsc2015\1vs100-gameshow\1vs100\gameplay.h(20): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+     1>d:\vsc2015\1vs100-gameshow\1vs100\protocol.h(60): error C2041: illegal digit '8' for base '8'
+     1>d:\vsc2015\1vs100-gameshow\1vs100\protocol.h(61): error C2041: illegal digit '8' for base '8'
+     1>d:\vsc2015\1vs100-gameshow\1vs100\protocol.h(62): error C2041: illegal digit '8' for base '8'
+     1>d:\vsc2015\1vs100-gameshow\1vs100\protocol.h(63): error C2041: illegal digit '8' for base '8'
+     1>d:\vsc2015\1vs100-gameshow\1vs100\protocol.cpp(132): error C3861: 'splitMessage': identifier not found
+         Gameplay.cpp
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.h(24): warning C4091: 'typedef ': ignored on left of 'Question' when no variable is declared
+     1>d:\vsc2015\1vs100-gameshow\1vs100\question.h(30): warning C4091: 'typedef ': ignored on left of 'ANSWER' when no variable is declared
+     1>d:\vsc2015\1vs100-gameshow\1vs100\gameplay.h(15): error C2065: 'INET_ADDRSTRLEN': undeclared identifier
+     1>d:\vsc2015\1vs100-gameshow\1vs100\gameplay.h(20): error C3646: 'status': unknown override specifier
+     1>d:\vsc2015\1vs100-gameshow\1vs100\gameplay.h(20): error C4430: missing type specifier - int assumed. Note: C++ does not support default-int
+         Generating Code...
+     1>Done Building Project "D:\VSC2015\1vs100-Gameshow\1vs100\1vs100.vcxproj" (Build target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:01.52

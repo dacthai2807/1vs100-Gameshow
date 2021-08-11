@@ -7,7 +7,7 @@ int receiveMessage(int socket, T *buff, int size, int flags) {
 		perror("Error: ");
 	return ret;
 }
-
+/*
 template <class T>
 int sendMessage(int socket, T *buff, int size, int flags) {
 	int ret = send(socket, buff, size, flags);
@@ -15,7 +15,7 @@ int sendMessage(int socket, T *buff, int size, int flags) {
 		perror("Error: ");
 	return ret;
 }
-
+*/
 void setMessageResponse(Response *msg) {
 	if (msg->code != NULL) {
 		switch (msg->code) {
@@ -85,6 +85,7 @@ void setMessageResponse(Response *msg) {
 		case INFORMATION_ORTHER_PLAYER_ANSWERING:
 			strcpy_s(msg->message, "");
 			break;
+			/*
 		case GAME_READY:
 			strcpy_s(msg->message, "Game ready ");
 			break;
@@ -96,7 +97,7 @@ void setMessageResponse(Response *msg) {
 			break;
 		case GAME_END:
 			strcpy_s(msg->message, "End game. You are champion ");
-			break;
+			break;*/
 		case GAME_IS_PLAYING:
 			strcpy_s(msg->message, "\nGame is playing!! You can't login \n");
 			break;
@@ -129,8 +130,8 @@ void readMessageResponse(Response *msg) {
 
 void setOpcodeRequest(Request *request, char *input) {
 	char code[BUFF_SIZE], data[BUFF_SIZE];
-	splitMessage(input, code, data);
-	strcpy(request->message, data);
+	//splitMessage(input, code, data);
+	strcpy_s(request->message, data);
 	if (strcmp(code, "SIGNIN") == 0)
 		request->code = SIGNIN;
 	else if (strcmp(code, "SIGNUP") == 0)
@@ -152,24 +153,24 @@ void setOpcodeRequest(Request *request, char *input) {
 void requestGet(int socket) {
 	Request *request = new Request;
 	setOpcodeRequest(request, "CHECK check");
-	sendMessage(socket, request, sizeof(Request), 0);
+	//sendMessage(socket, request, sizeof(Request), 0);
 }
 void requestCheckInformation(int socket) {
 	Request *request = new Request;
 	setOpcodeRequest(request, "INFO information");
-	sendMessage(socket, request, sizeof(Request), 0);
+	//sendMessage(socket, request, sizeof(Request), 0);
 }
 
 void requestLogout(int socket, char *username) {
 	Request *request = new Request;
 	char buff[BUFF_SIZE];
-	strcpy(buff, "SIGNOUT ");
-	strcat(buff, username);
+	strcpy_s(buff, "SIGNOUT ");
+	strcat_s(buff, username);
 	setOpcodeRequest(request, buff);
-	sendMessage(socket, request, sizeof(Request), 0);
+	//sendMessage(socket, request, sizeof(Request), 0);
 }
 void requestGetHelp(int socket) {
 	Request *request = new Request;
 	setOpcodeRequest(request, "HELP help");
-	sendMessage(socket, request, sizeof(Request), 0);
+	//sendMessage(socket, request, sizeof(Request), 0);
 }

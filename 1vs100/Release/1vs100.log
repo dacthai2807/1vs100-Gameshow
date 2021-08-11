@@ -1,0 +1,31 @@
+﻿Build started 8/11/2021 11:22:24 PM.
+     1>Project "D:\VSC2015\1vs100-Gameshow\1vs100\1vs100.vcxproj" on node 2 (Build target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\CL.exe /c /Zi /nologo /W3 /WX- /sdl /O2 /Oi /Oy- /GL /D WIN32 /D NDEBUG /D _CONSOLE /D _UNICODE /D UNICODE /Gm- /EHsc /MD /GS /Gy /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"Release\\" /Fd"Release\vc140.pdb" /Gd /TP /analyze- /errorReport:prompt Server.cpp
+         Server.cpp
+     1>d:\vsc2015\1vs100-gameshow\1vs100\Question.h(24): warning C4091: 'typedef ': ignored on left of 'Question' when no variable is declared
+     1>d:\vsc2015\1vs100-gameshow\1vs100\Question.h(30): warning C4091: 'typedef ': ignored on left of 'ANSWER' when no variable is declared
+     1>Server.cpp(23): warning C4005: 'BUFF_SIZE': macro redefinition
+         d:\vsc2015\1vs100-gameshow\1vs100\Question.h(9): note: see previous definition of 'BUFF_SIZE'
+     1>Server.cpp(86): warning C4018: '<': signed/unsigned mismatch
+     1>Server.cpp(101): warning C4018: '<': signed/unsigned mismatch
+     1>Server.cpp(112): warning C4018: '<': signed/unsigned mismatch
+     1>Server.cpp(125): warning C4018: '<': signed/unsigned mismatch
+     1>Server.cpp(149): warning C4101: 'clientIp': unreferenced local variable
+       Link:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\link.exe /ERRORREPORT:PROMPT /OUT:"D:\VSC2015\1vs100-Gameshow\Release\1vs100.exe" /INCREMENTAL:NO /NOLOGO kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /Debug /PDB:"D:\VSC2015\1vs100-Gameshow\Release\1vs100.pdb" /SUBSYSTEM:CONSOLE /OPT:REF /OPT:ICF /LTCG:incremental /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"D:\VSC2015\1vs100-Gameshow\Release\1vs100.lib" /MACHINE:X86 /SAFESEH Release\Account.obj
+         Release\Gameplay.obj
+         Release\Protocol.obj
+         Release\Question.obj
+         Release\Server.obj
+         Generating code
+         2 of 178 functions ( 1.1%) were compiled, the rest were copied from previous compilation.
+           0 functions were new in current compilation
+           1 functions had inline decision re-evaluated but remain unchanged
+         Finished generating code
+         1vs100.vcxproj -> D:\VSC2015\1vs100-Gameshow\Release\1vs100.exe
+     1>Done Building Project "D:\VSC2015\1vs100-Gameshow\1vs100\1vs100.vcxproj" (Build target(s)).
+
+Build succeeded.
+
+Time Elapsed 00:00:01.29
