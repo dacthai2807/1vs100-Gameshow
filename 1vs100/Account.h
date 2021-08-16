@@ -29,7 +29,7 @@ Account *findUserNameAccount(vector<Account*> accountList, char *username);     
 //load acc t? file
 vector<Account*>loadAcc(char *addrFIle);
 
-int checkLogin(char * usernameAndPass, char* code);
+int checkLogin(char * usernameAndPass);
 int checkSignUp(char* usernameAndPass);
 void writeFileAccount(char* userNameAndPass);
 int checkLogout();

@@ -1,5 +1,11 @@
 #include "Question.h"
 
+
+int checkAnswer(char *data) {
+	return 1;
+}
+
+
 vector<Question*> createQuestionList() {
 	vector<Question*> questionList;
 	return questionList;

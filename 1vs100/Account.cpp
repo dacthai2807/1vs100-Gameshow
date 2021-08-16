@@ -1,7 +1,7 @@
 #include "Account.h"
 
 
-int checkLogin(char * usernameAndPass, char* code) {
+int checkLogin(char * usernameAndPass) {
 	return 1;
 };
 int checkSignUp(char* usernameAndPass) {

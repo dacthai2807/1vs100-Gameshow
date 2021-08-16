@@ -29,6 +29,7 @@ typedef enum ANSWER {
 	C
 };
 
+int checkAnswer(char* data);
 vector<Question*> createQuestionList();
 
 vector<Question*>loadQuestion(char *addr);

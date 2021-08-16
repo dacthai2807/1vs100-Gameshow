@@ -10,14 +10,12 @@
 
 
 typedef struct {
-	bool sigIn;
-	ANSWER ans;
-	int clientPort;
-	char clientIp[INET_ADDRSTRLEN];
+	char ans;
 	string userName;
 } InformationPlayer;
 
 typedef struct {
+	int numberMainPlayer;
 	int status;
 	int phayerAnswerWrong;
 	int phayerPlaying;
@@ -26,13 +24,16 @@ typedef struct {
 typedef enum {
 	WAITING_PLAYER,
 	WAITING_QUESTION,
+	CHOSE_PLAYER,
+	SEND_QUESTION,
 	PLAYING,
 	END_GAME,
 } GAMEPLAY_STATUS;
 
-int luckyMember(vector<Account*> accountList);
+int checkHelp();
+int luckyMember();
 int calculeteScore(int playerPlaying, int playerLoser);
-int choseHelp();
+
 
 
 

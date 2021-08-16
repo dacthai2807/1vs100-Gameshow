@@ -11,6 +11,7 @@
 #include "string"
 #include "fstream"
 #include "ctime"
+#include "time.h"
 #include "iostream"
 
 
@@ -21,11 +22,12 @@
 #define PORT 6000
 #define DATA_BUFSIZE 2048
 #define BUFF_SIZE 2048
-#define SEND_BUFF 100
+#define SEND_BUFF 1000
 #define MAX_CLIENT 5000
 #define MAX_ACC 100
 #define SERVER_ADDR "127.0.0.1"
 #define MAX_PLAYER 101
+#define TIME_WAITING 30
 
 #define ADDR_ACC "account.txt"
 #define ADDR_QUES "question.txt"
@@ -45,18 +47,24 @@ typedef struct {
 } PER_IO_OPERATION_DATA, *LPPER_IO_OPERATION_DATA;
 
 
-vector<Account*> account;
-//vector<Question*> question;
-InformationGame gamePlay;
-LPPER_IO_OPERATION_DATA operationData[MAX_PLAYER + 1] = { 0 };
-InformationPlayer player[MAX_PLAYER + 1] = { 0 };
-
-
-
 
 typedef struct {
 	SOCKET socket;
 } PER_HANDLE_DATA, *LPPER_HANDLE_DATA;
+
+
+
+
+vector<Account*> account;
+//vector<Question*> question;
+InformationGame gamePlay;
+LPPER_IO_OPERATION_DATA operationData[MAX_PLAYER + 1] = { 0 };
+LPPER_HANDLE_DATA handleData[MAX_PLAYER + 1] = { 0 };
+InformationPlayer player[MAX_PLAYER + 1] = { 0 };
+
+//time wait when player send aswer
+clock_t time_start, time_end;
+
 
 bool stateId[MAX_CLIENT];
 CRITICAL_SECTION critical;
@@ -75,6 +83,21 @@ void loadDataBase() {
 	//question = loadQuestion(ADDR_QUES);
 }
 
+
+
+/*
+funtion check time when recv answer
+@pagram id: id of player
+*/
+int checkTime(int id) {
+	time_end = clock();
+	int time = (int)(time_end - time_start) / CLOCKS_PER_SEC;
+	if (id == gamePlay.numberMainPlayer)
+		return 1;
+	if (time <= TIME_WAITING)
+		return 1;
+	return 0;
+}
 
 /*funcion check the end of the message
 @param data: array of processing data
@@ -142,7 +165,7 @@ char* processPrefix(char* buff, char* mess) {
 @param id: session index
 @return: no return value
 */
-void processData(char* recvbuff, char* sendbuff, LPPER_IO_OPERATION_DATA perIOdata) {
+void processData(char* recvbuff, char* sendbuff, LPPER_IO_OPERATION_DATA perIOdata, LPPER_HANDLE_DATA perHandleData) {
 	char mess[BUFF_SIZE] = { '\0' };// prefix
 	char data[BUFF_SIZE] = { '\0' };// data
 	//int clientPort = session[id].clientPort;//session's port
@@ -150,47 +173,120 @@ void processData(char* recvbuff, char* sendbuff, LPPER_IO_OPERATION_DATA perIOda
 	//strcpy_s(clientIp, session[id].clientIp);
 	// separate data and prefix
 	strcpy_s(data, processPrefix(recvbuff, mess));
-	if (strcmp(mess, "SIGNIN") == 0) {
-		//ki?m tra tài kh?a m?t kh?u và tr? v? code cho sendbuff
-		if (checkLogin(data, sendbuff)) {
-			for (int i = 1; i <= MAX_PLAYER; i++) {
-				if (operationData[i] == 0) {
-					operationData[i] = perIOdata;
-					perIOdata->stt = i;
-					break;
+	switch (gamePlay.status)
+	{
+	case WAITING_PLAYER:
+		if (strcmp(mess, "SIGNIN") == 0) {
+			//kiem tra tài khoan mat khau và tra ve code cho sendbuff
+			if (checkLogin(data)) {
+				for (int i = 1; i <= MAX_PLAYER; i++) {
+					if (operationData[i] == 0) {
+						operationData[i] = perIOdata;
+						handleData[i] = perHandleData;
+						perIOdata->stt = i;
+						gamePlay.phayerPlaying += 1;
+						player[i].userName = data;
+						if (gamePlay.phayerPlaying == MAX_PLAYER)
+							gamePlay.status = CHOSE_PLAYER;
+						memcpy(sendbuff, "000", SEND_BUFF);
+						break;
+					}
 				}
 			}
+			else {
+				memcpy(sendbuff, "001", SEND_BUFF);
+			}
 		}
-	}
-	else if (strcmp(mess, "SIGNUP") == 0) {
-		if (checkSignUp(data)) {
-			writeFileAccount(data);
-			memcpy(sendbuff, "010", SEND_BUFF);
+		else if (strcmp(mess, "SIGNUP") == 0) {
+			if (checkSignUp(data)) {
+				writeFileAccount(data);
+				memcpy(sendbuff, "010", SEND_BUFF);
+			}
+			else {
+				memcpy(sendbuff, "011", SEND_BUFF);
+			}
 		}
-		else {
-			memcpy(sendbuff, "011", SEND_BUFF);
-		}
-	}
-	else if (strcmp(mess, "SIGNOUT") == 0) {
-		if (checkLogout()) {
-			memcpy(sendbuff, "020", SEND_BUFF);
-		}
-		else {
-			memcpy(sendbuff, "021", SEND_BUFF);
-		}
+		else if (strcmp(mess, "SIGNOUT") == 0) {
+			if (checkLogout()) {
+				memcpy(sendbuff, "020", SEND_BUFF);
+			}
+			else {
+				memcpy(sendbuff, "021", SEND_BUFF);
+			}
 
+
+		}
+		else if (strcmp(mess, "EXIT") == 0) {
+			memcpy(sendbuff, "050", SEND_BUFF);
+		}
+		else {
+			memcpy(sendbuff, "100", SEND_BUFF);
+			//Client submitted malformed
+
+		}
+		break;
+	case PLAYING:
+		if (strcmp(mess, "SIGNIN") == 0) {
+			memcpy(sendbuff, "005", SEND_BUFF);
+		}
+		else if (strcmp(mess, "SIGNUP") == 0) {
+			if (checkSignUp(data)) {
+				writeFileAccount(data);
+				memcpy(sendbuff, "010", SEND_BUFF);
+			}
+			else {
+				memcpy(sendbuff, "011", SEND_BUFF);
+			}
+		}
+		else if (strcmp(mess, "SIGNOUT") == 0) {
+			if (checkLogout()) {
+				memcpy(sendbuff, "020", SEND_BUFF);
+			}
+			else {
+				memcpy(sendbuff, "021", SEND_BUFF);
+			}
+		}
+		else if (strcmp(mess, "ANSWER") == 0) {
+			if (checkTime(perIOdata->id)) {
+				if (checkAnswer(data)) {
+					memcpy(sendbuff, "030", SEND_BUFF);
+				}
+				else {
+					memcpy(sendbuff, "031", SEND_BUFF);
+				}
+			}
+			else {
+				// 032 is code; over time
+				memcpy(sendbuff, "032", SEND_BUFF);
+			}
+		}
+		else if (strcmp(mess, "HELP") == 0) {
+			if (checkHelp()) {
+				//do something
+				memcpy(sendbuff, "040", SEND_BUFF);
+			}
+			else {
+				memcpy(sendbuff, "041", SEND_BUFF);
+			}
+		}
+		else if (strcmp(mess, "EXIT") == 0) {
+			memcpy(sendbuff, "050", SEND_BUFF);
+		}
+		else {
+			memcpy(sendbuff, "100", SEND_BUFF);
+			//Client submitted malformed
+
+		}
+		break;
+	default:
+		break;
+	}
 	
-	}
-	else if (strcmp(mess, "QUIT") == 0) {
-		//returns results for each received message
-		
-		//writeFileLog(clientIp, clientPort, mess, "+OK", data);// wite file log
-	}
-	else {
-		memcpy(sendbuff, "021", SEND_BUFF);
-		//Client submitted malformed
-	
-	}
+}
+
+
+void processQuestion(char *sendBuf) {
+	memcpy(sendBuf, "question demo ", SEND_BUFF);
 }
 
 /*the function clears the disconnected client session structure
@@ -215,6 +311,7 @@ int _tmain(int argc, _TCHAR* argv[])
 	int clientAddrLen = sizeof(clientAddr), clientPort;
 
 	gamePlay.status = WAITING_PLAYER;
+	gamePlay.phayerPlaying = 0;
 	InitializeCriticalSection(&critical);
 
 	if (WSAStartup((2, 2), &wsaData) != 0) {
@@ -377,7 +474,7 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 					extractFromData(perIoData->recvBuff.buf, data);
 					LeaveCriticalSection(&critical);
 					perIoData->sendBuf.buf = perIoData->bufSend;
-					processData(data, perIoData->sendBuf.buf, perIoData);
+					processData(data, perIoData->sendBuf.buf, perIoData, perHandleData);
 					perIoData->sendBuf.len = strlen(perIoData->sendBuf.buf);
 
 					//cout << strlen(data) << data << "--->" << perIoData->sendBuf.buf << endl;
@@ -407,8 +504,76 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 							continue;
 						}
 					}
+					break;
 			}
+			case CHOSE_PLAYER:
+			{
+				if (hasDelimeted(perIoData->recvBuff.buf)) {
+					char data[BUFF_SIZE] = { '\0' };
+					extractFromData(perIoData->recvBuff.buf, data);
+					if (data == "060") {
+						gamePlay.status = SEND_QUESTION;
+					}
+					else {
+						gamePlay.numberMainPlayer = luckyMember();
+						perIoData = operationData[gamePlay.numberMainPlayer];
+						perHandleData = handleData[gamePlay.numberMainPlayer];
+						if (WSASend(perHandleData->socket, &(perIoData->sendBuf), 1, &transferredBytes, 0, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
+							if (WSAGetLastError() != ERROR_IO_PENDING) {
+								printf("WSASend() failed with error %d\n", WSAGetLastError());
+								EnterCriticalSection(&critical);
+								//closeSesion(perIoData, perHandleData, perIoData->id);
+								LeaveCriticalSection(&critical);
+								continue;
+							}
+						}
+						break;
+					}
+				}
+				else {
+					gamePlay.numberMainPlayer = luckyMember();
+					perIoData = operationData[gamePlay.numberMainPlayer];
+					perHandleData = handleData[gamePlay.numberMainPlayer];
+					if (WSASend(perHandleData->socket, &(perIoData->sendBuf), 1, &transferredBytes, 0, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
+						if (WSAGetLastError() != ERROR_IO_PENDING) {
+							printf("WSASend() failed with error %d\n", WSAGetLastError());
+							EnterCriticalSection(&critical);
+							//closeSesion(perIoData, perHandleData, perIoData->id);
+							LeaveCriticalSection(&critical);
+							continue;
+						}
+					}
+					break;
 
+				}
+			}
+			case SEND_QUESTION:
+			{
+				EnterCriticalSection(&critical);
+				char data[SEND_BUFF] = { '\0' };
+				processQuestion(data);
+				for (int i = 1; i <= MAX_PLAYER; i++) {
+					perIoData = operationData[i];
+					perHandleData = handleData[i];
+					ZeroMemory(&(perIoData->overlapped), sizeof(OVERLAPPED));
+					strcpy_s(perIoData->bufSend, data);
+					perIoData->sendBuf.buf = perIoData->bufSend;
+					perIoData->sendBuf.len = strlen(data);
+					if (WSASend(perHandleData->socket, &(perIoData->sendBuf), 1, &transferredBytes, 0, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
+						if (WSAGetLastError() != ERROR_IO_PENDING) {
+							printf("WSASend() failed with error %d\n", WSAGetLastError());
+
+							//closeSesion(perIoData, perHandleData, perIoData->id);
+							continue;
+						}
+					}
+
+				}
+				gamePlay.status = PLAYING;
+				time_start = clock();
+				LeaveCriticalSection(&critical);
+				break;
+			}
 		default:
 			break;
 		}
