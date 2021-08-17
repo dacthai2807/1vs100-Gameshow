@@ -89,14 +89,10 @@ void loadDataBase() {
 funtion check time when recv answer
 @pagram id: id of player
 */
-int checkTime(int id) {
+int checkTime() {
 	time_end = clock();
 	int time = (int)(time_end - time_start) / CLOCKS_PER_SEC;
-	if (id == gamePlay.numberMainPlayer)
-		return 1;
-	if (time <= TIME_WAITING)
-		return 1;
-	return 0;
+	return time;
 }
 
 /*funcion check the end of the message
@@ -247,18 +243,21 @@ void processData(char* recvbuff, char* sendbuff, LPPER_IO_OPERATION_DATA perIOda
 			}
 		}
 		else if (strcmp(mess, "ANSWER") == 0) {
-			if (checkTime(perIOdata->id)) {
-				if (checkAnswer(data)) {
-					memcpy(sendbuff, "030", SEND_BUFF);
-				}
-				else {
-					memcpy(sendbuff, "031", SEND_BUFF);
-				}
+			if (checkTime() <= TIME_WAITING) {
+				player[perIOdata->id].ans = data[0];
+				//gui dap an thanh cong
+				memcpy(sendbuff, "030", SEND_BUFF);
 			}
 			else {
 				// 032 is code; over time
-				memcpy(sendbuff, "032", SEND_BUFF);
+				player[perIOdata->id].ans = '\0';
+				memcpy(sendbuff, "031", SEND_BUFF);
 			}
+			if (checkTime() > TIME_WAITING && perIOdata->id == gamePlay.numberMainPlayer) {
+				player[perIOdata->id].ans = data[0];
+				gamePlay.status = SEND_ANSWER;
+			}
+			
 		}
 		else if (strcmp(mess, "HELP") == 0) {
 			if (checkHelp()) {
