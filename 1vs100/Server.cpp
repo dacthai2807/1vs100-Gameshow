@@ -60,7 +60,8 @@ vector<Account*> account;
 InformationGame gamePlay;
 LPPER_IO_OPERATION_DATA operationData[MAX_PLAYER + 1] = { 0 };
 LPPER_HANDLE_DATA handleData[MAX_PLAYER + 1] = { 0 };
-InformationPlayer player[MAX_PLAYER + 1] = { 0 };
+LP_InformationPlayer player[MAX_PLAYER + 1] = { 0 };
+Question ques;
 
 //time wait when player send aswer
 clock_t time_start, time_end;
@@ -181,7 +182,7 @@ void processData(char* recvbuff, char* sendbuff, LPPER_IO_OPERATION_DATA perIOda
 						handleData[i] = perHandleData;
 						perIOdata->stt = i;
 						gamePlay.phayerPlaying += 1;
-						player[i].userName = data;
+						player[i]->userName = data;
 						if (gamePlay.phayerPlaying == MAX_PLAYER)
 							gamePlay.status = CHOSE_PLAYER;
 						memcpy(sendbuff, "000", SEND_BUFF);
@@ -244,18 +245,26 @@ void processData(char* recvbuff, char* sendbuff, LPPER_IO_OPERATION_DATA perIOda
 		}
 		else if (strcmp(mess, "ANSWER") == 0) {
 			if (checkTime() <= TIME_WAITING) {
-				player[perIOdata->id].ans = data[0];
-				//gui dap an thanh cong
-				memcpy(sendbuff, "030", SEND_BUFF);
+				if (perIOdata->id != gamePlay.numberMainPlayer) {
+					player[perIOdata->id]->ans = data[0];
+					//gui dap an thanh cong
+					memcpy(sendbuff, "030", SEND_BUFF);
+				}
+				else {
+					// 032 is code; over time
+					memcpy(sendbuff, "032", SEND_BUFF);
+				}
 			}
 			else {
-				// 032 is code; over time
-				player[perIOdata->id].ans = '\0';
-				memcpy(sendbuff, "031", SEND_BUFF);
-			}
-			if (checkTime() > TIME_WAITING && perIOdata->id == gamePlay.numberMainPlayer) {
-				player[perIOdata->id].ans = data[0];
-				gamePlay.status = SEND_ANSWER;
+				if (perIOdata->id == gamePlay.numberMainPlayer) {
+					player[perIOdata->id]->ans = data[0];
+					gamePlay.status = SEND_ANSWER;
+					memcpy(sendbuff, "031", SEND_BUFF);
+				}
+				else {
+					// 032 is code; over time
+					memcpy(sendbuff, "032", SEND_BUFF);
+				}
 			}
 			
 		}
@@ -504,6 +513,46 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 						}
 					}
 					break;
+				}
+			case WAITING_MAINPLAYER:
+			{
+				if (hasDelimeted(perIoData->recvBuff.buf)) {
+					char data[BUFF_SIZE] = { '\0' };
+					extractFromData(perIoData->recvBuff.buf, data);
+					if (data == "060") {
+						gamePlay.status = SEND_QUESTION;
+					}
+					else {
+						perIoData = operationData[gamePlay.numberMainPlayer];
+						perHandleData = handleData[gamePlay.numberMainPlayer];
+						if (WSASend(perHandleData->socket, &(perIoData->sendBuf), 1, &transferredBytes, 0, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
+							if (WSAGetLastError() != ERROR_IO_PENDING) {
+								printf("WSASend() failed with error %d\n", WSAGetLastError());
+								EnterCriticalSection(&critical);
+								//closeSesion(perIoData, perHandleData, perIoData->id);
+								LeaveCriticalSection(&critical);
+								continue;
+							}
+						}
+						break;
+					}
+				}
+				else {
+					gamePlay.numberMainPlayer = luckyMember();
+					perIoData = operationData[gamePlay.numberMainPlayer];
+					perHandleData = handleData[gamePlay.numberMainPlayer];
+					if (WSASend(perHandleData->socket, &(perIoData->sendBuf), 1, &transferredBytes, 0, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
+						if (WSAGetLastError() != ERROR_IO_PENDING) {
+							printf("WSASend() failed with error %d\n", WSAGetLastError());
+							EnterCriticalSection(&critical);
+							//closeSesion(perIoData, perHandleData, perIoData->id);
+							LeaveCriticalSection(&critical);
+							continue;
+						}
+					}
+					break;
+
+				}
 			}
 			case CHOSE_PLAYER:
 			{
@@ -572,7 +621,35 @@ unsigned __stdcall serverWorkerThread(LPVOID completionPortID)
 				time_start = clock();
 				LeaveCriticalSection(&critical);
 				break;
+		}
+		case SEND_ANSWER:
+		{
+			EnterCriticalSection(&critical);
+			for (int i = 1; i <= MAX_PLAYER; i++) {
+				if (player[i] == 0) continue;
+				perIoData = operationData[i];
+				perHandleData = handleData[i];
+				ZeroMemory(&(perIoData->overlapped), sizeof(OVERLAPPED));
+				perIoData->sendBuf.buf = perIoData->bufSend;
+				if (player[i]->ans == ques.true_ans)
+					memcpy(perIoData->sendBuf.buf, "033", SEND_BUFF);
+				else
+					memcpy(perIoData->sendBuf.buf, "034", SEND_BUFF);
+				perIoData->sendBuf.len = 3;
+				if (WSASend(perHandleData->socket, &(perIoData->sendBuf), 1, &transferredBytes, 0, &(perIoData->overlapped), NULL) == SOCKET_ERROR) {
+					if (WSAGetLastError() != ERROR_IO_PENDING) {
+						printf("WSASend() failed with error %d\n", WSAGetLastError());
+
+						//closeSesion(perIoData, perHandleData, perIoData->id);
+						continue;
+					}
+				}
 			}
+			LeaveCriticalSection(&critical);
+			gamePlay.status = WAITING_MAINPLAYER;
+			break;
+		}
+		
 		default:
 			break;
 		}

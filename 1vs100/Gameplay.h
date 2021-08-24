@@ -12,7 +12,7 @@
 typedef struct {
 	char ans;
 	string userName;
-} InformationPlayer;
+} InformationPlayer, *LP_InformationPlayer;
 
 typedef struct {
 	int numberMainPlayer;
@@ -24,6 +24,7 @@ typedef struct {
 typedef enum {
 	WAITING_PLAYER,
 	WAITING_QUESTION,
+	WAITING_MAINPLAYER,
 	CHOSE_PLAYER,
 	SEND_QUESTION,
 	SEND_ANSWER,
